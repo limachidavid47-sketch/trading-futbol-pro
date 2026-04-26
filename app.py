@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # ==========================================
 # 1. SEGURIDAD, ACCESO QUANT Y ENLACE MÁGICO
 # ==========================================
-st.set_page_config(page_title="Quant Elite V33.1", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Quant Elite V33.2", layout="wide", initial_sidebar_state="expanded")
 
 def check_password():
     token = ""
@@ -19,11 +19,8 @@ def check_password():
             token = params.get("token", [""])[0]
         except: pass
         
-    if token == "capo": 
-        st.session_state["password_correct"] = True
-        
-    if st.session_state.get("password_correct", False): 
-        return True
+    if token == "capo": st.session_state["password_correct"] = True
+    if st.session_state.get("password_correct", False): return True
 
     st.markdown("""
     <style>
@@ -36,20 +33,18 @@ def check_password():
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-        st.markdown("<div class='login-title'>⚡ QUANT TERMINAL V33.1</div>", unsafe_allow_html=True)
-        st.markdown("<p style='color:#64748B; margin-bottom:20px; text-align: center;'>OMNI-SISTEMA HFT (MOBAs + FPS)</p>", unsafe_allow_html=True)
+        st.markdown("<div class='login-title'>⚡ QUANT TERMINAL V33.2</div>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#64748B; margin-bottom:20px; text-align: center;'>RADAR EXTENDIDO (7 DÍAS)</p>", unsafe_allow_html=True)
         
         with st.form("login_form", clear_on_submit=False):
             u = st.text_input("Operador")
             p = st.text_input("Clave de Acceso", type="password")
             submit_btn = st.form_submit_button("AUTENTICAR SISTEMA", use_container_width=True)
-            
             if submit_btn:
                 if u == st.secrets.get("usuario", "") and p == st.secrets.get("password", ""):
                     st.session_state["password_correct"] = True
                     st.rerun()
-                else: 
-                    st.error("❌ Acceso Denegado.")
+                else: st.error("❌ Acceso Denegado.")
         st.markdown("</div>", unsafe_allow_html=True)
     return False
 
@@ -100,7 +95,6 @@ bank_actual = gestionar_bank()
 def calculate_gold_impact(gold_diff, minute, game_slug):
     if minute <= 0: return 0
     if game_slug == "dota2": divisor, pivote = 10000, 30
-    # PARCHE: Cambiado a "mlbb" para que detecte bien el impacto del oro
     elif game_slug == "mlbb": divisor, pivote = 5000, 12 
     else: divisor, pivote = 8000, 25
     impacto_bruto = gold_diff / divisor
@@ -134,18 +128,14 @@ def motor_fps(wr1, wr2, mercado, opcion, linea, t1_name, f_blood, eco_adv):
     prob_base = wr1 / total_wr if es_eq1 else wr2 / total_wr
 
     if "Handicap" in mercado:
-        if "Mapas" in mercado: dificultad = (abs(linea) * 0.15)
-        else: dificultad = (abs(linea) * 0.04)
+        dificultad = (abs(linea) * 0.15) if "Mapas" in mercado else (abs(linea) * 0.04)
         prob_base = prob_base - dificultad if linea < 0 else prob_base + dificultad
-        
     elif "Total" in mercado:
         mom = (wr1 + wr2) / 2
         prob_base = 0.5 + (mom - 0.5) * 0.4 if "Más" in opcion else 0.5 - (mom - 0.5) * 0.4
-        
     elif "Carrera" in mercado:
         var = 0.55 if "5" in mercado else 0.70 if "9" in mercado else 0.85
         prob_base = 0.50 + (((wr1 / total_wr if es_eq1 else wr2 / total_wr) - 0.50) * var)
-        
     elif "Pistolas" in mercado:
         prob_base = 0.50 + (((wr1 / total_wr if es_eq1 else wr2 / total_wr) - 0.50) * 0.4) 
 
@@ -161,12 +151,7 @@ def motor_fps(wr1, wr2, mercado, opcion, linea, t1_name, f_blood, eco_adv):
 # ==========================================
 st.sidebar.markdown("### 🎨 Apariencia")
 tema = st.sidebar.selectbox("", ["Azul Oscuro (Defecto)", "Verde Hacker", "Rojo Táctico"])
-
-colors = {
-    "Azul Oscuro (Defecto)": ("#0B1120", "#1E293B", "#F1F5F9", "#38BDF8"), 
-    "Verde Hacker": ("#000000", "#051A05", "#4ADE80", "#10B981"), 
-    "Rojo Táctico": ("#0A0000", "#1A0505", "#FECACA", "#EF4444")
-}
+colors = {"Azul Oscuro (Defecto)": ("#0B1120", "#1E293B", "#F1F5F9", "#38BDF8"), "Verde Hacker": ("#000000", "#051A05", "#4ADE80", "#10B981"), "Rojo Táctico": ("#0A0000", "#1A0505", "#FECACA", "#EF4444")}
 c_bg, c_card, c_text, c_acc = colors[tema]
 c_sub, c_border, c_btn = "#94A3B8", "#334155", "#0F172A"
 
@@ -185,10 +170,7 @@ st.markdown(f"""
     .badge-live {{ background: #EF4444; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; animation: pulse 2s infinite; }}
     .badge-time {{ background: {c_acc}; color: {c_bg}; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }}
     .stream-btn {{ background-color: #9146FF; color: white !important; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: bold; display: block; margin-top: 15px; text-align: center; transition: 0.2s; width: 100%; }}
-    .stream-btn:hover {{ background-color: #772CE8; transform: scale(1.02); }}
     div.stButton > button {{ background-color: {c_btn}; color: {c_acc}; border: 1px solid {c_border}; font-weight: bold; border-radius: 8px; padding: 10px; }}
-    [data-testid="stExpanderDetails"] {{ padding-bottom: 180px !important; }}
-    @keyframes pulse {{ 0% {{opacity: 1;}} 50% {{opacity: 0.6;}} 100% {{opacity: 1;}} }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -213,32 +195,16 @@ st.sidebar.markdown("---")
 categoria = st.sidebar.radio("🌐 TIPO DE OPERACIÓN", ["⚔️ MOBAs (Estrategia)", "🔫 Shooters (Tácticos)"])
 st.sidebar.markdown("---")
 
-mercados_fps = [
-    "-- Seleccione un Mercado --", 
-    "⭐ PARTIDO: Ganador del Partido", 
-    "⭐ PARTIDO: Handicap de Mapas", 
-    "⭐ PARTIDO: Total de Mapas (O/U)", 
-    "🗺️ MAPA: Ganador", 
-    "🗺️ MAPA: Handicap de Rondas", 
-    "🗺️ MAPA: Total de Rondas (O/U)", 
-    "🗺️ MAPA: Carrera a 5 Rondas", 
-    "🗺️ MAPA: Carrera a 9 Rondas", 
-    "🗺️ MAPA: Carrera a 13 Rondas",
-    "🗺️ MAPA: Ronda de Pistolas (R1/R13)"
-]
+mercados_fps = ["-- Seleccione --", "⭐ PARTIDO: Ganador del Partido", "⭐ PARTIDO: Handicap de Mapas", "⭐ PARTIDO: Total de Mapas", "🗺️ MAPA: Ganador", "🗺️ MAPA: Handicap de Rondas", "🗺️ MAPA: Total de Rondas", "🗺️ MAPA: Ronda de Pistolas"]
 
 if categoria == "⚔️ MOBAs (Estrategia)":
-    # PARCHE: Cambiado 'mobile-legends' a 'mlbb' en el diccionario para la API
     juegos_config = {
-        "League of Legends": {"slug": "lol", "mercados": ["-- Seleccione un Mercado --", "⭐ PARTIDO: Ganador del Partido", "Handicap", "Primera Sangre", "Primer Dragón", "Carrera a 5 Kills", "Carrera a 10 Kills", "Carrera a 15 Kills", "Total Dragones", "Total Barones", "Total Torres", "Total Kills", "Kills por Equipo", "Duración de Partida"]},
-        "Dota 2": {"slug": "dota2", "mercados": ["-- Seleccione un Mercado --", "⭐ PARTIDO: Ganador del Partido", "Handicap", "Primer Roshan", "Carrera a 5 Kills", "Carrera a 10 Kills", "Carrera a 15 Kills", "Total Torres", "Total Kills", "Kills por Equipo", "Duración de Partida"]},
-        "Mobile Legends": {"slug": "mlbb", "mercados": ["-- Seleccione un Mercado --", "⭐ PARTIDO: Ganador del Partido", "Handicap", "Primer Lord", "Carrera a 5 Kills", "Carrera a 10 Kills", "Carrera a 15 Kills", "Total Kills", "Kills por Equipo", "Duración de Partida"]}
+        "League of Legends": {"slug": "lol", "mercados": ["-- Seleccione --", "⭐ PARTIDO: Ganador del Partido", "Handicap", "Primera Sangre", "Primer Dragón", "Carrera a 5 Kills", "Total Kills"]},
+        "Dota 2": {"slug": "dota2", "mercados": ["-- Seleccione --", "⭐ PARTIDO: Ganador del Partido", "Handicap", "Primer Roshan", "Carrera a 5 Kills", "Total Torres", "Total Kills"]},
+        "Mobile Legends": {"slug": "mlbb", "mercados": ["-- Seleccione --", "⭐ PARTIDO: Ganador del Partido", "Handicap", "Primer Lord", "Carrera a 5 Kills", "Total Kills", "Duración de Partida"]}
     }
 else:
-    juegos_config = {
-        "CS:GO 2": {"slug": "csgo", "mercados": mercados_fps},
-        "Valorant": {"slug": "valorant", "mercados": mercados_fps}
-    }
+    juegos_config = {"CS:GO 2": {"slug": "csgo", "mercados": mercados_fps}, "Valorant": {"slug": "valorant", "mercados": mercados_fps}}
 
 st.sidebar.markdown(f"<h3 style='color:{c_text};'>🎮 Disciplina</h3>", unsafe_allow_html=True)
 juego_sel = st.sidebar.radio("", list(juegos_config.keys()))
@@ -248,18 +214,17 @@ mercados_list = juegos_config[juego_sel]["mercados"]
 if st.sidebar.button("🗑️ Limpiar Caché", use_container_width=True): st.cache_data.clear(); st.rerun()
 
 # ==========================================
-# 6. RADAR QUANT CORE
+# 6. RADAR QUANT CORE (EXPANDIDO 7 DÍAS)
 # ==========================================
 st.markdown(f"<h2 style='color:{c_text};'>📡 Radar Quant: {juego_sel}</h2>", unsafe_allow_html=True)
     
-running = call_api_live(slug, "matches/running", "per_page=10")
-upcoming = call_api_live(slug, "matches/upcoming", "per_page=30&sort=begin_at")
+running = call_api_live(slug, "matches/running", "per_page=20")
+upcoming = call_api_live(slug, "matches/upcoming", "per_page=50&sort=begin_at") # Extraemos 50 partidos en lugar de 30
 partidos_totales = running + upcoming
 
 hoy_utc = datetime.utcnow()
 hoy_local = hoy_utc - timedelta(hours=4)
-str_hoy_local = hoy_local.strftime("%Y-%m-%d")
-str_mañana_local = (hoy_local + timedelta(days=1)).strftime("%Y-%m-%d")
+limite_semana = hoy_local + timedelta(days=7) # RADAR EXPANDIDO A 1 SEMANA
 
 partidos_filtrados = []
 for p in partidos_totales:
@@ -268,10 +233,11 @@ for p in partidos_totales:
     elif p['status'] == 'not_started' and p.get('begin_at'):
         dt_utc = datetime.strptime(p['begin_at'], "%Y-%m-%dT%H:%M:%SZ")
         dt_local = dt_utc - timedelta(hours=4)
-        if dt_local.strftime("%Y-%m-%d") in [str_hoy_local, str_mañana_local]:
+        if hoy_local.date() <= dt_local.date() <= limite_semana.date():
             partidos_filtrados.append(p)
 
-if not partidos_filtrados: st.info("Escaneando servidores. No hay actividad oficial inmediata en las próximas 48 horas.")
+if not partidos_filtrados: 
+    st.info("Escaneando servidores. No hay actividad oficial programada en los próximos 7 días en la API pública.")
 else:
     c1, c2 = st.columns(2)
     for i, m in enumerate(partidos_filtrados[:16]):
@@ -287,14 +253,14 @@ else:
         else:
             dt_utc = datetime.strptime(m['begin_at'], "%Y-%m-%dT%H:%M:%SZ")
             dt_local = dt_utc - timedelta(hours=4)
-            if dt_local.strftime("%Y-%m-%d") == str_hoy_local:
+            if dt_local.date() == hoy_local.date():
                 badge = f"<span class='badge-time'>🕒 Hoy {dt_local.strftime('%H:%M')}</span>"
+            elif dt_local.date() == (hoy_local + timedelta(days=1)).date():
+                badge = f"<span class='badge-time'>📅 Mañana {dt_local.strftime('%H:%M')}</span>"
             else:
                 badge = f"<span class='badge-time'>📅 {dt_local.strftime('%d/%m')} 🕒 {dt_local.strftime('%H:%M')}</span>"
 
-        stream_link = m.get('official_video_url')
-        if not stream_link and m.get('streams_list'):
-            stream_link = m['streams_list'][0].get('raw_url', '')
+        stream_link = m.get('official_video_url') or (m['streams_list'][0].get('raw_url', '') if m.get('streams_list') else '')
         boton_stream = f'<a href="{stream_link}" target="_blank" class="stream-btn">📺 Ver Transmisión Oficial</a>' if stream_link else ''
 
         with (c1 if i % 2 == 0 else c2):
@@ -313,13 +279,11 @@ else:
             with st.expander(f"⚙️ Analítica y Operación"):
                 sel_mer = st.selectbox("Mercado:", mercados_list, key=f"mer_{i}")
                 
-                if sel_mer != "-- Seleccione un Mercado --":
+                if sel_mer != "-- Seleccione --":
                     c_izq, c_der = st.columns(2)
                     with c_izq:
-                        if "Total" in sel_mer or "Duración" in sel_mer: 
-                            sel_opcion = st.radio("Opción:", ["Más (+)", "Menos (-)"], horizontal=True, key=f"op_{i}")
-                        else: 
-                            sel_opcion = st.radio("A favor de:", [t1['name'], t2['name']], horizontal=True, key=f"op_{i}")
+                        if "Total" in sel_mer or "Duración" in sel_mer: sel_opcion = st.radio("Opción:", ["Más (+)", "Menos (-)"], horizontal=True, key=f"op_{i}")
+                        else: sel_opcion = st.radio("A favor de:", [t1['name'], t2['name']], horizontal=True, key=f"op_{i}")
                         linea = st.number_input("Línea de Casino:", value=0.0, step=0.5, key=f"l_{i}")
                     
                     with c_der:
@@ -329,67 +293,25 @@ else:
                         
                         if "PARTIDO" not in sel_mer:
                             st.markdown(f"<div style='border-top:1px solid {c_border}; margin-top:5px; padding-top:5px;'></div>", unsafe_allow_html=True)
-                            mapa_context = st.radio("📍 Operando en:", ["Mapa 1", "Mapa 2 (o posterior)"], horizontal=True, key=f"ctx_{i}")
-                            
-                            if mapa_context == "Mapa 2 (o posterior)":
-                                st.markdown(f"<p style='font-size:11px; color:{c_acc}; font-weight:bold;'>🔁 Inyector Momentum (Ganador Mapa Anterior)</p>", unsafe_allow_html=True)
-                                res_m1 = st.selectbox("", ["Ninguno", t1['name'], t2['name']], key=f"m1_{i}")
-                                
+                            if st.radio("📍 Operando en:", ["Mapa 1", "Mapa 2+"], horizontal=True, key=f"ctx_{i}") == "Mapa 2+":
+                                res_m1 = st.selectbox("Ganador Mapa 1", ["Ninguno", t1['name'], t2['name']], key=f"m1_{i}")
                                 if res_m1 != "Ninguno":
                                     es_t1_fav = wr1 >= wr2
-                                    if "Total" in sel_mer or "Duración" in sel_mer:
-                                        ajuste_mapa_2 = +0.03 if "Más" in sel_opcion else -0.03
+                                    if "Total" in sel_mer or "Duración" in sel_mer: ajuste_mapa_2 = +0.03 if "Más" in sel_opcion else -0.03
                                     else:
-                                        if res_m1 == t1['name']: 
-                                            if sel_opcion == t1['name']: ajuste_mapa_2 = -0.02 if es_t1_fav else 0.01
-                                            elif sel_opcion == t2['name']: ajuste_mapa_2 = 0.02 if es_t1_fav else -0.01
-                                        elif res_m1 == t2['name']: 
-                                            if sel_opcion == t2['name']: ajuste_mapa_2 = -0.02 if not es_t1_fav else 0.01
-                                            elif sel_opcion == t1['name']: ajuste_mapa_2 = 0.02 if not es_t1_fav else -0.01
+                                        if res_m1 == t1['name']: ajuste_mapa_2 = (-0.02 if es_t1_fav else 0.01) if sel_opcion == t1['name'] else (0.02 if es_t1_fav else -0.01)
+                                        elif res_m1 == t2['name']: ajuste_mapa_2 = (-0.02 if not es_t1_fav else 0.01) if sel_opcion == t2['name'] else (0.02 if not es_t1_fav else -0.01)
                                         
-                        # MOTOR MOBA
                         if categoria == "⚔️ MOBAs (Estrategia)":
-                            if "PARTIDO" not in sel_mer:
-                                remontada = st.checkbox("💸 Modelo Oro (En Vivo)", key=f"rem_{i}")
-                                ajuste_oro = 0
-                                if remontada:
-                                    c_min, c_oro = st.columns(2)
-                                    min_actual = c_min.number_input("Min:", value=15, key=f"min_{i}")
-                                    diff_oro = c_oro.number_input("Oro Diff:", value=0, step=500, key=f"oro_{i}")
-                                    ajuste_oro = calculate_gold_impact(diff_oro, min_actual, slug)
-                            else: ajuste_oro = 0 
-                            
-                            prob_base = motor_moba(wr1, wr2, sel_mer, sel_opcion, linea, t1['name'])
-                            prob_final = max(0.05, min(0.95, prob_base + ajuste_oro + ajuste_mapa_2))
-                        
-                        # MOTOR FPS
+                            ajuste_oro = 0
+                            if "PARTIDO" not in sel_mer and st.checkbox("💸 Modelo Oro (En Vivo)", key=f"rem_{i}"):
+                                c_min, c_oro = st.columns(2)
+                                ajuste_oro = calculate_gold_impact(c_oro.number_input("Oro Diff:", value=0, step=500, key=f"oro_{i}"), c_min.number_input("Min:", value=15, key=f"min_{i}"), slug)
+                            prob_final = max(0.05, min(0.95, motor_moba(wr1, wr2, sel_mer, sel_opcion, linea, t1['name']) + ajuste_oro + ajuste_mapa_2))
                         else:
-                            st.markdown(f"<div style='border-top:1px solid {c_border}; margin-top:5px; padding-top:5px;'></div>", unsafe_allow_html=True)
-                            st.markdown("<p style='font-size:11px; color:#10B981;'>🎯 Simulador Bayesiano In-Play</p>", unsafe_allow_html=True)
-                            f_blood = st.selectbox("Primera Sangre (Ronda):", ["Neutral", "A favor", "En contra"], key=f"fb_{i}")
-                            eco_adv = st.selectbox("Economía (Armas):", ["Igualados", "Full Buy vs Eco", "Eco vs Full Buy"], key=f"eco_{i}")
-                            prob_base = motor_fps(wr1, wr2, sel_mer, sel_opcion, linea, t1['name'], f_blood, eco_adv)
-                            prob_final = max(0.05, min(0.95, prob_base + ajuste_mapa_2))
+                            f_blood = st.selectbox("1ra Sangre (Ronda):", ["Neutral", "A favor", "En contra"], key=f"fb_{i}")
+                            eco_adv = st.selectbox("Armas:", ["Igualados", "Full Buy vs Eco", "Eco vs Full Buy"], key=f"eco_{i}")
+                            prob_final = max(0.05, min(0.95, motor_fps(wr1, wr2, sel_mer, sel_opcion, linea, t1['name'], f_blood, eco_adv) + ajuste_mapa_2))
 
-                    st.markdown(f"""
-                    <div class="prob-box">
-                        <div style="font-size:10px; text-transform:uppercase;">Probabilidad Algoritmo</div>
-                        <div class="prob-number">{prob_final*100:.1f}%</div>
-                        <div style="font-size:10px; color:{c_sub};">Cuota Mínima: {1/prob_final:.2f}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    if 0.75 <= prob_final <= 0.99:
-                        st.markdown(f"<div class='sniper-alert'>🎯 ¡SNIPER ALERT!</div>", unsafe_allow_html=True)
-
-                    cuota = st.number_input("Cuota Casino:", value=1.00, step=0.01, key=f"c_{i}")
-                    if cuota > 1.01: 
-                        if cuota > (1/prob_final):
-                            kelly = (((cuota - 1) * prob_final) - (1 - prob_final)) / (cuota - 1)
-                            stake = (kelly * 0.25) * bank_actual
-                            if stake > 0:
-                                st.success(f"🔥 Sugerido: {stake:.2f} U")
-                                if st.button("Registrar", key=f"btn_{i}", use_container_width=True):
-                                    gestionar_bank(bank_actual - stake)
-                                    st.rerun()
-                        else: st.warning("❌ Cuota sin valor.")
+                    st.markdown(f"""<div class="prob-box"><div style="font-size:10px;">Probabilidad Algoritmo</div><div class="prob-number">{prob_final*100:.1f}%</div><div style="font-size:10px;">Cuota Mínima: {1/prob_final:.2f}</div></div>""", unsafe_allow_html=True)
+                    if prob_final >= 0.75: st.markdown(f"<div class='sniper-alert'>🎯 ¡SNIPER ALERT!</div>", unsafe_allow_html=True)
